@@ -1,0 +1,115 @@
+<?php
+function form_module_form($form,&$form_state)
+{
+
+$form['name']=array(
+'#type' => 'textfield',
+'#size' => '20',
+'#required' => 'False',
+'#title' => 'Enter name',
+);
+
+$form['id']=array(
+'#type' => 'textfield',
+'#size' => '20',
+
+'#title' => 'Enter Id'
+);
+$form['submit_button']=array(
+'#type' => 'submit',
+'#value' => 'Click'
+);
+//return $form;
+/* $form['friends_email'] = array(
+'#type' => 'textfield',
+'#required' => TRUE,
+'#title' => t("Your friend's email address"),
+'#description' => t('Must be a valid email address'),
+);
+
+$form['submit'] = array(
+'#type' => 'submit',
+'#value' => t('Submit'),
+);*/
+
+return $form;
+}
+function form_module_menu() {
+$items = array();
+$items['custom_form'] = array( //this creates a URL that will call this form at "examples/form-example"
+'title' => 'Example Form', //page title
+'description' => 'A form to mess around with.',
+'page callback' => 'drupal_get_form', //this is the function that willbe called when the page is accessed. for a form, use drupal_get_form
+'page arguments' => array('form_module_form'), //put the name of theform here
+'access callback' => TRUE
+);
+return $items;
+}/*
+function form_module_menu() {
+$items['form_module'] = array(
+'title' => 'My Menu', //The name of the menu that will be displayed
+'page callback' => 'form_module_callback', //The name of the functionthat will output a page
+);
+return $items;
+}
+function form_module_callback() {
+//The argument is the name of the function with the form details
+return drupal_get_form('form_module_form');
+}*/
+
+
+function form_module_form_validate($form,&$form_state)
+{
+if(($form_state['values']['id'] <=0 ))
+{
+form_set_error('name', t('Please Enter A Positive Number'));
+}
+}
+function form_module_form_submit($form, &$form_state) {
+//$name=$form_state['values']['name'];
+//print t('Your Name Is');
+//drupal_set_message("Custom message");
+		//$query = drupal_get_destination();
+		//drupal_goto('node/3',$query);
+ $query = new EntityFieldQuery();
+ $query->entityCondition('entity_type', 'node')
+  ->entityCondition('bundle', 'book_borrowed')
+  ->propertyCondition('status', 1)
+  ->fieldCondition('field_borrowers_name', 'value', 'Monojit', '=')
+  ->fieldOrderBy('field_borrow_date', 'value', 'DESC')
+  ;
+$result = $query->execute();
+	if (isset($result['node'])) {
+	  $book= array_shift($result['node']);
+	  //$news_items = entity_load('node', $news_items_nids);
+	  $node_id=$book->field_field_book['und'][0]['target_id'];
+	  drupal_set_message($node_id);
+	}
+
+}
+function form_module_block_info() {
+$blocks = array();
+
+$blocks['testing_form_module'] = array(
+'info' => t('Testing Form Module Block'),
+'cache' => DRUPAL_NO_CACHE,
+);
+
+return $blocks;
+}
+function form_module_block_view($block_name = '') {
+if ($block_name == 'testing_form_module') {
+$list = module_list();
+
+//$theme_args = array('items' => $list, 'type' => 'ol');
+//$content = theme('item_list', $theme_args);
+//Print('Hello');
+$block = array(
+'subject' => t('Testin Form Module'),
+'content' => drupal_get_form('form_module_form'),
+);
+
+return $block;
+}
+}
+?>
